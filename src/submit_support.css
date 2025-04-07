@@ -1,0 +1,40 @@
+.Container {
+  justify-content: space-evenly;
+  background-color: rgb(174, 208, 238);
+  box-shadow: 0 4px 8px rgba(26, 24, 24, 0.14);
+  width: 80%;
+  height: 70vh;
+  border-radius: 2%;
+  padding: 5%;
+}
+.HeadingDiv {
+  display: flex;
+  font-size: 2em;
+  justify-content: space-between;
+}
+.DisplyaDiv {
+  height: 100%;
+  overflow: scroll;
+  scrollbar-width: none;
+}
+#Btn {
+  background-color: rgb(2, 48, 33);
+  border-radius: 5px;
+  color: aliceblue;
+}
+.Popupdiv1 {
+  width: 100%;
+  height: 70px;
+  background-color: rgb(156, 223, 223);
+  align-content: center;
+  justify-items: center;
+}
+.profile {
+  display: flex;
+  justify-content: space-between;
+}
+#ProfileIMG {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+}

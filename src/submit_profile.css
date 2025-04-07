@@ -1,0 +1,14 @@
+span {
+  font-size: large;
+  font-weight: bold;
+}
+.ProfileCont {
+  display: flex;
+  justify-content: space-evenly;
+  background-color: rgb(174, 208, 238);
+  box-shadow: 0 4px 8px rgba(26, 24, 24, 0.14);
+  width: 80%;
+  height: 70vh;
+  border-radius: 2%;
+  padding: 5%;
+}

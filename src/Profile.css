@@ -1,0 +1,30 @@
+.top {
+  background-color: rgb(7, 7, 52);
+  height: 60px;
+  font-size: 3em;
+  padding: 10px;
+  color: aliceblue;
+}
+.bodyDiv {
+  display: flex;
+}
+.NavDiv {
+  width: 20%;
+  margin: 15px 0 0 0;
+}
+.Componentsdiv {
+  width: 80%;
+  padding: 10px;
+}
+.NavDivItems {
+  width: 90%;
+  height: 50px;
+  background-color: rgb(7, 7, 52);
+  border: solid black 1px;
+  border-radius: 5px;
+  text-align: center;
+  color: aliceblue;
+  align-content: center;
+  justify-content: center;
+  margin: 10px 10px 10px 10px;
+}
