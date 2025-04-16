@@ -1,259 +1,182 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Popup from "reactjs-popup";
 import "./submit_support.css";
+import { port } from "./ProtUrl";
 
 export default function SubmitCertifications({ login }) {
   const [data, setData] = useState([]);
-  const [delete_, setDelete] = useState([]);
   const [refresh, setRefresh] = useState(0);
-  const [modify, setModify] = useState({
-    EmployeeID: login,
-    CertificationName: "",
-    Provider: "",
-    Duration: "",
-    Acc_Year: "",
-    certificationid: "",
-  });
-  const [addrow, setAddRow] = useState({
-    EmployeeID: login,
-    CertificationName: "",
-    Provider: "",
-    Duration: "",
-    Acc_Year: "",
-  });
+  const [editIndex, setEditIndex] = useState(null);
+  const [newEntryVisible, setNewEntryVisible] = useState(false);
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8081/certifications?userid=${login}`)
-      .then((res) => {
-        setData(res.data);
-      })
-      .then((err) => {});
+      .get(`${port}certifications?userid=${login}`)
+      .then((res) => setData(res.data));
   }, [refresh]);
-  const handleDelete = (e, index) => {
-    console.log(data[index].certificationid);
-    e.preventDefault();
+
+  const handleDelete = (index) => {
     axios
       .delete(
-        `http://localhost:8081/certifications?certificationid=${data[index].certificationid}`
+        `${port}certifications?certificationid=${data[index].certificationid}`
       )
-      .then((res) => {
-        console.log(res);
-        setRefresh((prev) => prev + 1);
-      })
-      .then((err) => {
-        console.log(err);
-      });
+      .then(() => setRefresh((prev) => prev + 1));
   };
-  ///
-  const handleModify = (e, key, index) => {
-    e.preventDefault();
 
-    setModify((prev) => ({ ...prev, [key]: e.target.value }));
-    setModify((prev) => ({
-      ...prev,
-      certificationid: index,
-    }));
-    console.log(modify);
-  }; ///
-  const handleSubmitModify = (e, index) => {
-    e.preventDefault();
-    console.log(modify);
-    console.log(typeof index);
-    axios
-      .put("http://localhost:8081/certifications", modify)
-      .then(
-        (res) => console.log(res),
-        setRefresh((prev) => prev + 1)
-      )
-      .then((err) => console.log(err));
-    setRefresh((prev) => prev + 1);
+  const handleEditChange = (index, key, value) => {
+    const updated = [...data];
+    updated[index][key] = value;
+    setData(updated);
   };
-  ////
-  const handleAdd = (e, key) => {
-    e.preventDefault();
-    setAddRow((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const handleSubmitEdit = (index) => {
+    const row = data[index];
+    axios.put(`${port}certifications`, row).then(() => {
+      setEditIndex(null);
+      setRefresh((prev) => prev + 1);
+    });
   };
-  ////////
+
+  const handleAddChange = (key, value) => {
+    setData((prev) => {
+      const newData = [...prev];
+      newData[prev.length] = {
+        ...(newData[prev.length] || {}),
+        EmployeeID: login,
+        [key]: value,
+      };
+      return newData;
+    });
+  };
+
   const handleSubmitAdd = () => {
-    axios
-      .post(`http://localhost:8081/certifications`, addrow)
-      .then(
-        (res) => console.log(res),
-        setRefresh((prev) => prev + 1)
-      )
-      .then((err) => {
-        console.log(err);
-      });
+    const newEntry = data[data.length - 1];
+    axios.post(`${port}certifications`, newEntry).then(() => {
+      setNewEntryVisible(false);
+      setRefresh((prev) => prev + 1);
+    });
   };
+
   return (
-    <>
-      <div className="Container">
-        <div className="HeadingDiv">
-          Certifications
-          <Popup
-            trigger={<input type="button" value="Add Row" id="Btn" />}
-            modal
-            nested
-          >
-            {(close) => (
-              <>
-                <div className="Popupdiv1">
-                  <table>
-                    <tr>
-                      <td>CertificationName</td>
-                      <td>Provider</td>
-                      <td>Duration</td>
-                      <td>Acc_Year</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "CertificationName")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "Provider")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "Duration")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "Acc_Year")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="submit"
-                          id="Btn"
-                          onClick={handleSubmitAdd}
-                        />
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-              </>
-            )}
-          </Popup>
-        </div>
-        <div className="DisplyaDiv">
-          {data.map((id, index) => {
-            return (
-              <div key={index} className="profile">
-                <div>
-                  <b>EmployeeID: </b>
-                  {id.EmployeeID}
-                  <br />
-                  <b>CertificationName:</b> {id.CertificationName} <br />
-                  <b> Provider:</b>
-                  {id.Provider}
-                  <br />
-                  <b>Duration:</b> {id.Duration}
-                  <br />
-                  <b>Acc_Year:</b> {id.Acc_Year}
-                </div>
-                <div>
-                  <Popup
-                    trigger={<input type="button" value="modify" id="Btn" />}
-                    modal
-                    nested
-                  >
-                    {(close) => (
-                      <>
-                        <div className="Popupdiv1">
-                          <table>
-                            <tr>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.CertificationName}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "CertificationName",
-                                      id.certificationid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Provider}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "Provider",
-                                      id.certificationid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Duration}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "Duration",
-                                      id.certificationid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Acc_Year}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "Acc_Year",
-                                      id.certificationid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  onClick={(e) => {
-                                    handleSubmitModify(e);
-                                    close();
-                                  }}
-                                  value="Submit"
-                                  id="Btn"
-                                />
-                              </td>
-                            </tr>
-                          </table>
-                        </div>
-                      </>
-                    )}
-                  </Popup>
+    <div className="Container">
+      <div className="HeadingDiv">
+        Certifications
+        <input
+          type="button"
+          value="Add Row"
+          id="Btn"
+          onClick={() => setNewEntryVisible(true)}
+        />
+      </div>
+      <div className="DisplyaDiv">
+        {data.map((id, index) => {
+          const isEditing = editIndex === index;
+          const isNewRow = newEntryVisible && index === data.length - 1;
+
+          return (
+            <div key={index} className="profile">
+              <div>
+                <b>EmployeeID:</b> {id.EmployeeID} <br />
+                <b>CertificationName:</b>{" "}
+                {isEditing || isNewRow ? (
+                  <input
+                    type="text"
+                    value={id.CertificationName || ""}
+                    onChange={(e) =>
+                      isNewRow
+                        ? handleAddChange("CertificationName", e.target.value)
+                        : handleEditChange(
+                            index,
+                            "CertificationName",
+                            e.target.value
+                          )
+                    }
+                  />
+                ) : (
+                  id.CertificationName
+                )}
+                <br />
+                <b>Provider:</b>{" "}
+                {isEditing || isNewRow ? (
+                  <input
+                    type="text"
+                    value={id.Provider || ""}
+                    onChange={(e) =>
+                      isNewRow
+                        ? handleAddChange("Provider", e.target.value)
+                        : handleEditChange(index, "Provider", e.target.value)
+                    }
+                  />
+                ) : (
+                  id.Provider
+                )}
+                <br />
+                <b>Duration:</b>{" "}
+                {isEditing || isNewRow ? (
+                  <input
+                    type="text"
+                    value={id.Duration || ""}
+                    onChange={(e) =>
+                      isNewRow
+                        ? handleAddChange("Duration", e.target.value)
+                        : handleEditChange(index, "Duration", e.target.value)
+                    }
+                  />
+                ) : (
+                  id.Duration
+                )}
+                <br />
+                <b>Acc_Year:</b>{" "}
+                {isEditing || isNewRow ? (
+                  <input
+                    type="text"
+                    value={id.Acc_Year || ""}
+                    onChange={(e) =>
+                      isNewRow
+                        ? handleAddChange("Acc_Year", e.target.value)
+                        : handleEditChange(index, "Acc_Year", e.target.value)
+                    }
+                  />
+                ) : (
+                  id.Acc_Year
+                )}
+              </div>
+              <div>
+                {isNewRow ? (
                   <input
                     type="button"
-                    onClick={(e) => handleDelete(e, index)}
-                    value="Delete"
+                    value="Submit"
                     id="Btn"
+                    onClick={handleSubmitAdd}
                   />
-                </div>
+                ) : isEditing ? (
+                  <input
+                    type="button"
+                    value="Save"
+                    id="Btn"
+                    onClick={() => handleSubmitEdit(index)}
+                  />
+                ) : (
+                  <>
+                    <input
+                      type="button"
+                      value="Modify"
+                      id="Btn"
+                      onClick={() => setEditIndex(index)}
+                    />
+                    <input
+                      type="button"
+                      value="Delete"
+                      id="Btn"
+                      onClick={() => handleDelete(index)}
+                    />
+                  </>
+                )}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
-    </>
+    </div>
   );
 }

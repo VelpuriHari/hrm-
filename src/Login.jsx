@@ -2,6 +2,7 @@ import "./Login.css";
 import { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { port } from "./ProtUrl";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -14,7 +15,7 @@ export default function Login() {
     e.preventDefault();
     if (email !== "" && password !== "") {
       axios
-        .get(`http://localhost:8081/users?email=${email}&password=${password}`)
+        .get(`${port}users?email=${email}&password=${password}`)
         .then((res) => {
           if (res.data.success) {
             navigate("/profile", { state: { login: res.data.user.userid } });

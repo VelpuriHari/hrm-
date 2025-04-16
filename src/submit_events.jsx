@@ -1,23 +1,13 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Popup from "reactjs-popup";
 import "./submit_support.css";
+import { port } from "./ProtUrl";
 
 export default function SubmitEvents({ login }) {
   const [data, setData] = useState([]);
-  const [delete_, setDelete] = useState([]);
   const [refresh, setRefresh] = useState(0);
-  const [modify, setModify] = useState({
-    EmployeeID: login,
-    ProgramName: "",
-    DateFrom: "",
-    DateTo: "",
-    Outcome: "",
-    Role: "",
-    Acc_year: "",
-    eventuserid: "",
-  });
-  const [addrow, setAddRow] = useState({
+  const [newEntryVisible, setNewEntryVisible] = useState(false);
+  const [newEntryData, setNewEntryData] = useState({
     EmployeeID: login,
     ProgramName: "",
     DateFrom: "",
@@ -29,260 +19,205 @@ export default function SubmitEvents({ login }) {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8081/eventinfo?userid=${login}`)
-      .then((res) => {
-        setData(res.data);
-      })
-      .then((err) => {});
+      .get(`${port}eventinfo?userid=${login}`)
+      .then((res) => setData(res.data));
   }, [refresh]);
-  const handleDelete = (e, index) => {
-    console.log(data[index].eventid);
-    e.preventDefault();
-    axios
-      .delete(
-        `http://localhost:8081/eventinfo?eventuserid=${data[index].eventuserid}`
-      )
-      .then((res) => {
-        console.log(res);
-        setRefresh((prev) => prev + 1);
-      })
-      .then((err) => {
-        console.log(err);
-      });
-  };
-  ///
-  const handleModify = (e, key, index) => {
-    e.preventDefault();
 
-    setModify((prev) => ({ ...prev, [key]: e.target.value }));
-    setModify((prev) => ({
+  const handleDelete = (index) => {
+    axios
+      .delete(`${port}eventinfo?eventuserid=${data[index].eventuserid}`)
+      .then(() => setRefresh((prev) => prev + 1));
+  };
+
+  const handleEditChange = (index, key, value) => {
+    const updated = [...data];
+    updated[index][key] = value;
+    setData(updated);
+  };
+
+  const handleSubmitEdit = (index) => {
+    const row = data[index];
+    axios
+      .put(`${port}eventinfo`, row)
+      .then(() => setRefresh((prev) => prev + 1));
+  };
+
+  const handleNewEntryChange = (key, value) => {
+    setNewEntryData((prev) => ({
       ...prev,
-      eventuserid: index,
+      [key]: value,
     }));
-    console.log(modify);
-  }; ///
-  const handleSubmitModify = (e, index) => {
-    e.preventDefault();
-    console.log(modify);
-    console.log(typeof index);
-    axios
-      .put("http://localhost:8081/eventinfo", modify)
-      .then(
-        (res) => console.log(res),
-        setRefresh((prev) => prev + 1)
-      )
-      .then((err) => console.log(err));
   };
-  ////
-  const handleAdd = (e, key) => {
-    e.preventDefault();
-    setAddRow((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const handleSubmitNewEntry = () => {
+    axios.post(`${port}eventinfo`, newEntryData).then(() => {
+      setNewEntryVisible(false);
+      setRefresh((prev) => prev + 1);
+    });
   };
-  ////////
-  const handleSubmitAdd = (e) => {
-    e.preventDefault();
-    axios
-      .post(`http://localhost:8081/eventinfo`, addrow)
-      .then((res) => console.log(res))
-      .then((err) => {
-        console.log(err);
-      });
-    setRefresh((prev) => prev + 1);
-  };
+
   return (
-    <>
-      <div className="Container">
-        <div className="HeadingDiv">
-          Events
-          <Popup
-            trigger={<input type="button" value="Add Row" id="Btn" />}
-            modal
-            nested
-          >
-            {(close) => (
-              <>
-                <div className="Popupdiv1">
-                  <table>
-                    <tr>
-                      <td>ProgramName</td>
-                      <td>DateFrom</td>
-                      <td>DateTo</td>
-                      <td>Outcome</td>
-                      <td>Role</td>
-                      <td>Acc_year</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "ProgramName")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "DateFrom")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "DateTo")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "Outcome")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "Role")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => handleAdd(e, "Acc_Year")}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          onClick={(e) => {
-                            handleSubmitModify(e);
-                            close();
-                          }}
-                          value="Submit"
-                          id="Btn"
-                        />
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-              </>
-            )}
-          </Popup>
-        </div>
-        <div className="DisplyaDiv">
-          {data.map((id, index) => {
-            return (
-              <div key={index} className="profile">
-                <div>
-                  <b>EmployeeID: </b>
-                  {id.EmployeeID}
-                  <br />
-                  <b>ProgramName:</b> {id.ProgramName} <br />
-                  <b> DateFrom:</b>
-                  {id.DateFrom}
-                  <br />
-                  <b>DateTo:</b> {id.DateTo}
-                  <br />
-                  <b>Outcome:</b> {id.Outcome}
-                  <br />
-                  <b>Role:</b> {id.Role}
-                  <br />
-                  <b>Acc_year:</b> {id.Acc_year}
-                </div>
-                <div>
-                  <Popup
-                    trigger={<input type="button" value="modify" id="Btn" />}
-                    modal
-                    nested
-                  >
-                    {(close) => (
-                      <>
-                        <div className="Popupdiv1">
-                          <table>
-                            <tr>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.ProgramName}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "ProgramName",
-                                      id.eventuserid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.DateFrom}
-                                  onChange={(e) =>
-                                    handleModify(e, "DateFrom", id.eventuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.DateTo}
-                                  onChange={(e) =>
-                                    handleModify(e, "DateTo", id.eventuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Outcome}
-                                  onChange={(e) =>
-                                    handleModify(e, "Outcome", id.eventuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Role}
-                                  onChange={(e) =>
-                                    handleModify(e, "Role", id.eventuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Acc_year}
-                                  onChange={(e) =>
-                                    handleModify(e, "Acc_year", id.eventuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  onClick={(e) => {
-                                    handleSubmitModify(e);
-                                    close();
-                                  }}
-                                  value="Submit"
-                                  id="Btn"
-                                />
-                              </td>
-                            </tr>
-                          </table>
-                        </div>
-                      </>
-                    )}
-                  </Popup>
-                  <input
-                    type="button"
-                    onClick={(e) => handleDelete(e, index)}
-                    value="Delete"
-                    id="Btn"
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+    <div className="Container">
+      <div className="HeadingDiv">
+        Events
+        <input
+          type="button"
+          value="Add Row"
+          id="Btn"
+          onClick={() => setNewEntryVisible(true)}
+        />
       </div>
-    </>
+
+      <div className="DisplyaDiv">
+        {data.map((id, index) => {
+          const isNewRow = newEntryVisible && index === data.length;
+          return (
+            <div key={index} className="profile">
+              <div>
+                <b>EmployeeID:</b> {id.EmployeeID} <br />
+                <b>ProgramName:</b>{" "}
+                <input
+                  type="text"
+                  value={id.ProgramName}
+                  onChange={(e) =>
+                    handleEditChange(index, "ProgramName", e.target.value)
+                  }
+                />
+                <br />
+                <b>DateFrom:</b>{" "}
+                <input
+                  type="text"
+                  value={id.DateFrom}
+                  onChange={(e) =>
+                    handleEditChange(index, "DateFrom", e.target.value)
+                  }
+                />
+                <br />
+                <b>DateTo:</b>{" "}
+                <input
+                  type="text"
+                  value={id.DateTo}
+                  onChange={(e) =>
+                    handleEditChange(index, "DateTo", e.target.value)
+                  }
+                />
+                <br />
+                <b>Outcome:</b>{" "}
+                <input
+                  type="text"
+                  value={id.Outcome}
+                  onChange={(e) =>
+                    handleEditChange(index, "Outcome", e.target.value)
+                  }
+                />
+                <br />
+                <b>Role:</b>{" "}
+                <input
+                  type="text"
+                  value={id.Role}
+                  onChange={(e) =>
+                    handleEditChange(index, "Role", e.target.value)
+                  }
+                />
+                <br />
+                <b>Acc_year:</b>{" "}
+                <input
+                  type="text"
+                  value={id.Acc_year}
+                  onChange={(e) =>
+                    handleEditChange(index, "Acc_year", e.target.value)
+                  }
+                />
+              </div>
+              <div>
+                <input
+                  type="button"
+                  value="Save"
+                  id="Btn"
+                  onClick={() => handleSubmitEdit(index)}
+                />
+                <input
+                  type="button"
+                  value="Delete"
+                  id="Btn"
+                  onClick={() => handleDelete(index)}
+                />
+              </div>
+            </div>
+          );
+        })}
+
+        {newEntryVisible && (
+          <div className="profile">
+            <div>
+              <b>EmployeeID:</b> {login} <br />
+              <b>ProgramName:</b>{" "}
+              <input
+                type="text"
+                value={newEntryData.ProgramName}
+                onChange={(e) =>
+                  handleNewEntryChange("ProgramName", e.target.value)
+                }
+              />
+              <br />
+              <b>DateFrom:</b>{" "}
+              <input
+                type="text"
+                value={newEntryData.DateFrom}
+                onChange={(e) =>
+                  handleNewEntryChange("DateFrom", e.target.value)
+                }
+              />
+              <br />
+              <b>DateTo:</b>{" "}
+              <input
+                type="text"
+                value={newEntryData.DateTo}
+                onChange={(e) => handleNewEntryChange("DateTo", e.target.value)}
+              />
+              <br />
+              <b>Outcome:</b>{" "}
+              <input
+                type="text"
+                value={newEntryData.Outcome}
+                onChange={(e) =>
+                  handleNewEntryChange("Outcome", e.target.value)
+                }
+              />
+              <br />
+              <b>Role:</b>{" "}
+              <input
+                type="text"
+                value={newEntryData.Role}
+                onChange={(e) => handleNewEntryChange("Role", e.target.value)}
+              />
+              <br />
+              <b>Acc_year:</b>{" "}
+              <input
+                type="text"
+                value={newEntryData.Acc_year}
+                onChange={(e) =>
+                  handleNewEntryChange("Acc_year", e.target.value)
+                }
+              />
+            </div>
+            <div>
+              <input
+                type="button"
+                value="Submit"
+                id="Btn"
+                onClick={handleSubmitNewEntry}
+              />
+              <input
+                type="button"
+                value="Cancel"
+                id="Btn"
+                onClick={() => setNewEntryVisible(false)}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

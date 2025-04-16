@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Popup from "reactjs-popup";
 import "./submit_support.css";
+import { port } from "./ProtUrl";
 
 export default function SubmitResearch({ login }) {
   const [data, setData] = useState([]);
@@ -28,7 +29,7 @@ export default function SubmitResearch({ login }) {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8081/certifications?userid=${login}`)
+      .get(`${port}certifications?userid=${login}`)
       .then((res) => {
         setData(res.data);
       })
@@ -39,7 +40,7 @@ export default function SubmitResearch({ login }) {
     e.preventDefault();
     axios
       .delete(
-        `http://localhost:8081/certifications?certificationid=${data[index].certificationid}`
+        `${port}certifications?certificationid=${data[index].certificationid}`
       )
       .then((res) => {
         console.log(res);
@@ -65,7 +66,7 @@ export default function SubmitResearch({ login }) {
     console.log(modify);
     console.log(typeof index);
     axios
-      .put("http://localhost:8081/certifications", modify)
+      .put(`${port}certifications`, modify)
       .then(
         (res) => console.log(res),
         setRefresh((prev) => prev + 1)
@@ -80,7 +81,7 @@ export default function SubmitResearch({ login }) {
   ////////
   const handleSubmitAdd = () => {
     axios
-      .post(`http://localhost:8081/certifications`, addrow)
+      .post(`${port}certifications`, addrow)
       .then(
         (res) => console.log(res),
         setRefresh((prev) => prev + 1)

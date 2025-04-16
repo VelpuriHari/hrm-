@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import "./ChangePassword.css";
+import { port } from "./ProtUrl";
 
 export default function ChangePassword() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ export default function ChangePassword() {
     e.preventDefault();
     if (password === repassword) {
       axios
-        .put(`http://localhost:8081/users`, {
+        .put(`${port}users`, {
           userid,
           email,
           password,

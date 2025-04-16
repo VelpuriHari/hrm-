@@ -20,6 +20,7 @@ import SubmitResearch from "./submit_research";
 import Home from "./Home";
 import Filters from "./Filters";
 import Analysis from "./Analysis";
+import Print from "./Print";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/filters" element={<Filters />} />
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/admin" element={<Registration />} />
+          <Route path="/print" element={<Print />} />
           <Route path="/changepassword" element={<ChangePassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/support" element={<Support />} />

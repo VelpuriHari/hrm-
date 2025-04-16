@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Popup from "reactjs-popup";
 import "./submit_support.css";
+import { port } from "./ProtUrl";
 
 export default function SubmitSupport({ login }) {
   const [data, setData] = useState([]);
@@ -24,7 +25,7 @@ export default function SubmitSupport({ login }) {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8081/support?userid=${login}`)
+      .get(`${port}support?userid=${login}`)
       .then((res) => {
         setData(res.data);
         //console.log(data);hg
@@ -38,7 +39,7 @@ export default function SubmitSupport({ login }) {
     e.preventDefault();
     axios
       .delete(
-        `http://localhost:8081/support?userid=${login}&EmplooyeId=${data[index].EmplooyeId}&Role=${data[index].Role}&Support=${data[index].Support}&Peroid=${data[index].Peroid}`
+        `${port}support?userid=${login}&EmplooyeId=${data[index].EmplooyeId}&Role=${data[index].Role}&Support=${data[index].Support}&Peroid=${data[index].Peroid}`
       )
       .then((res) => {
         console.log(res);
@@ -62,9 +63,8 @@ export default function SubmitSupport({ login }) {
   const handleSubmitModify = (e, index) => {
     e.preventDefault();
     console.log(modify);
-    console.log(typeof index);
     axios
-      .put("http://localhost:8081/support", modify)
+      .put(`${port}support`, modify)
       .then(
         (res) => console.log(res),
         setRefresh((prev) => prev + 1)
@@ -80,7 +80,7 @@ export default function SubmitSupport({ login }) {
   ////////
   const handleSubmitAdd = () => {
     axios
-      .post(`http://localhost:8081/support`, addrow)
+      .post(`${port}support`, addrow)
       .then((res) => console.log(res))
       .then((err) => {
         console.log(err);
@@ -92,178 +92,148 @@ export default function SubmitSupport({ login }) {
       <div className="Container">
         <div className="HeadingDiv">
           Support
-          <Popup
-            trigger={<input type="button" value="Add Row" id="Btn" />}
-            modal
-            nested
-          >
-            {(close) => (
-              <>
-                {" "}
-                <div className="Popupdiv1">
-                  <tr>
-                    <td>Role</td>
-                    <td>Scope</td>
-                    <td>Support</td>
-                    <td>Peroid</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Role")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Scope")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Support")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Peroid")}
-                      />
-                    </td>
-                    <td>
-                      {" "}
-                      <input
-                        type="submit"
-                        id="Btn"
-                        onClick={() => (handleSubmitAdd(), close())}
-                      />
-                    </td>
-                  </tr>
-                </div>
-              </>
-            )}
-          </Popup>
+          <input
+            type="button"
+            value="Add Row"
+            id="Btn"
+            onClick={() =>
+              setData((prev) => [
+                ...prev,
+                {
+                  EmployeeID: login,
+                  Role: "",
+                  Scope: "",
+                  Support: "",
+                  Acc_Year: "",
+                  support_userid: "new_" + Date.now(), // temp ID
+                  isNew: true,
+                },
+              ])
+            }
+          />
         </div>
         <div className="DisplyaDiv">
-          {data.length !== 0
-            ? data.map((id, index) => {
-                return (
-                  <div key={index} className="profile">
-                    <div>
-                      <b>EmplooyeId: </b>
-                      {id.EmployeeID}
-                      {console.log(id.support_userid)}
-                      <br />
-                      <b>Role:</b> {id.Role} <br />
-                      <b> Scope:</b>
-                      {id.Scope}
-                      <br />
-                      <b>Support:</b> {id.Support}
-                      <br />
-                      <b>Peroid:</b> {id.Acc_Year}
-                    </div>
-                    <div>
-                      <Popup
-                        trigger={
-                          <input type="button" value="modify" id="Btn" />
+          {data.map((id, index) => {
+            const isNew = id.isNew;
+            const isEditing =
+              isNew || modify.support_userid === id.support_userid;
+
+            return (
+              <div key={index} className="profile">
+                <div>
+                  <b>EmployeeID:</b> {id.EmployeeID} <br />
+                  <b>Role:</b>{" "}
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      defaultValue={id.Role}
+                      onChange={(e) =>
+                        handleModify(e, "Role", id.support_userid)
+                      }
+                    />
+                  ) : (
+                    id.Role
+                  )}
+                  <br />
+                  <b>Scope:</b>{" "}
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      defaultValue={id.Scope}
+                      onChange={(e) =>
+                        handleModify(e, "Scope", id.support_userid)
+                      }
+                    />
+                  ) : (
+                    id.Scope
+                  )}
+                  <br />
+                  <b>Support:</b>{" "}
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      defaultValue={id.Support}
+                      onChange={(e) =>
+                        handleModify(e, "Support", id.support_userid)
+                      }
+                    />
+                  ) : (
+                    id.Support
+                  )}
+                  <br />
+                  <b>Period:</b>{" "}
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      defaultValue={id.Acc_Year}
+                      onChange={(e) =>
+                        handleModify(e, "Peroid", id.support_userid)
+                      }
+                    />
+                  ) : (
+                    id.Acc_Year
+                  )}
+                </div>
+                <div>
+                  {isEditing ? (
+                    <input
+                      id="Btn"
+                      type="button"
+                      value="Save"
+                      onClick={(e) => {
+                        if (isNew) {
+                          axios
+                            .post(`${port}support`, {
+                              EmployeeId: id.EmployeeID,
+                              Role: modify.Role,
+                              Scope: modify.Scope,
+                              Support: modify.Support,
+                              Peroid: modify.Peroid,
+                            })
+                            .then((res) => {
+                              console.log(res);
+                              setRefresh((prev) => prev + 1);
+                            });
+                        } else {
+                          handleSubmitModify(e);
                         }
-                        modal
-                        nested
-                      >
-                        {(close) => (
-                          <>
-                            <div className="Popupdiv1">
-                              <table>
-                                <tr>
-                                  <td>Role</td>
-                                  <td>Scope</td>
-                                  <td>Support</td>
-                                  <td>Peroid</td>
-                                  <td></td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      defaultValue={id.Role}
-                                      onChange={(e) =>
-                                        handleModify(
-                                          e,
-                                          "Role",
-                                          id.support_userid
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      defaultValue={id.Scope}
-                                      onChange={(e) =>
-                                        handleModify(
-                                          e,
-                                          "Scope",
-                                          id.support_userid
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      defaultValue={id.Support}
-                                      onChange={(e) =>
-                                        handleModify(
-                                          e,
-                                          "Support",
-                                          id.support_userid
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      defaultValue={id.Acc_Year}
-                                      onChange={(e) => {
-                                        handleModify(
-                                          e,
-                                          "Peroid",
-                                          id.support_userid
-                                        );
-                                      }}
-                                    />
-                                  </td>
-                                  <td>
-                                    <input
-                                      id="Btn"
-                                      onClick={(e) => {
-                                        handleSubmitModify(e);
-                                        close();
-                                      }}
-                                      type="Submit"
-                                    />
-                                  </td>
-                                </tr>
-                              </table>
-                            </div>
-                          </>
-                        )}
-                      </Popup>
-                      <input
-                        type="button"
-                        onClick={(e) => handleDelete(e, index)}
-                        value="Delete"
-                        id="Btn"
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            : "NO DATA"}
+
+                        setModify({
+                          EmployeeID: login,
+                          Role: "",
+                          Scope: "",
+                          Support: "",
+                          Peroid: "",
+                        });
+                      }}
+                    />
+                  ) : (
+                    <input
+                      type="button"
+                      value="Modify"
+                      id="Btn"
+                      onClick={() =>
+                        setModify({
+                          EmployeeID: id.EmployeeID,
+                          Role: id.Role,
+                          Scope: id.Scope,
+                          Support: id.Support,
+                          Peroid: id.Acc_Year,
+                          support_userid: id.support_userid,
+                        })
+                      }
+                    />
+                  )}
+                  <input
+                    type="button"
+                    onClick={(e) => handleDelete(e, index)}
+                    value="Delete"
+                    id="Btn"
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </>

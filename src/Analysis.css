@@ -1,0 +1,9 @@
+.Componentdiv {
+  background-color: antiquewhite;
+  width: 75%;
+  height: 100%;
+  margin: 25px;
+  padding: 25px;
+  align-items: center;
+  justify-items: space-around;
+}

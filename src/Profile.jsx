@@ -8,9 +8,10 @@ import SubmitEvents from "./submit_events";
 import SubmitPatents from "./submit_patents";
 import SubmitResearch from "./submit_research";
 import SubmitProfile from "./submit_profile";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 export default function Profile() {
   const [Switch, setSwitch] = useState("Profile");
+  const navigator = useNavigate();
   const location = useLocation();
   const login = location.state?.login;
   const handleNavBar = (item) => {
@@ -21,6 +22,9 @@ export default function Profile() {
       <div className="top">{Switch}</div>
       <div className="bodyDiv">
         <div className="NavDiv">
+          <div className="NavDivItems" onClick={() => handleNavBar("Home")}>
+            Home
+          </div>
           <div className="NavDivItems" onClick={() => handleNavBar("Profile")}>
             Profile
           </div>
@@ -59,7 +63,9 @@ export default function Profile() {
         </div>
 
         <div className="Componentsdiv">
-          {Switch === "Profile" ? (
+          {Switch === "Home" ? (
+            navigator("/")
+          ) : Switch === "Profile" ? (
             <SubmitProfile login={login} />
           ) : Switch === "Support" ? (
             <SubmitSupport login={login} />

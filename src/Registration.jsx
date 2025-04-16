@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import "./Registration.css";
+import { port } from "./ProtUrl";
 
 export default function Registration() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ export default function Registration() {
     console.log(email);
     if (userid !== "" && email !== "" && password !== "") {
       axios
-        .post(`http://localhost:8081/users`, {
+        .post(`${port}users`, {
           userid,
           email,
           password,

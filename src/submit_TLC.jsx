@@ -1,28 +1,13 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Popup from "reactjs-popup";
 import "./submit_support.css";
+import { port } from "./ProtUrl";
 
 export default function SubmitTLC({ login }) {
   const [data, setData] = useState([]);
-  const [delete_, setDelete] = useState([]);
   const [refresh, setRefresh] = useState(0);
-  const [modify, setModify] = useState({
-    EmployeeID: login,
-    Course: "",
-    CourseCode: "",
-    Year: "",
-    Semester: "",
-    Sec: "",
-    ScheduledClasses: "",
-    HeldClasses: "",
-    No_ofStudentsRegistered: "",
-    No_ofStudentsPassed: "",
-    No_ofStudentsGivenFeedback: "",
-    FeedbackResult: "",
-    Acc_Year: "",
-    tlpuserid: "",
-  });
+  const [editIndex, setEditIndex] = useState(null);
+  const [addMode, setAddMode] = useState(false);
   const [addrow, setAddRow] = useState({
     EmployeeID: login,
     Course: "",
@@ -40,395 +25,149 @@ export default function SubmitTLC({ login }) {
   });
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:8081/tlp?userid=${login}`)
-      .then((res) => {
-        setData(res.data);
-        //console.log(data);hg
-      })
-      .then((err) => {
-        // consougugihoijogugiygugi
-      });
+    axios.get(`${port}tlp?userid=${login}`).then((res) => setData(res.data));
   }, [refresh]);
-  const handleDelete = (e, index) => {
-    console.log(data[index]);
-    e.preventDefault();
-    axios
-      .delete(`http://localhost:8081/tlp?tlpuserid=${data[index].tlpuserid}`)
-      .then((res) => {
-        console.log(res);
-        setRefresh((prev) => prev + 1);
-      })
-      .then((err) => {
-        console.log(err);
-      });
-  };
-  ///
-  const handleModify = (e, key, index) => {
-    e.preventDefault();
 
-    setModify((prev) => ({ ...prev, [key]: e.target.value }));
-    setModify((prev) => ({
-      ...prev,
-      tlpuserid: index,
-    }));
-    console.log(modify);
-  }; ///
-  const handleSubmitModify = (e) => {
-    e.preventDefault();
+  const handleDelete = (id) => {
     axios
-      .put("http://localhost:8081/tlp", modify)
-      .then(
-        (res) => console.log(res),
-        setRefresh((prev) => prev + 1)
-      )
-      .then((err) => console.log(err));
+      .delete(`${port}tlp?tlpuserid=${id}`)
+      .then(() => setRefresh((prev) => prev + 1));
   };
-  ////
-  const handleAdd = (e, key) => {
-    e.preventDefault();
-    setAddRow((prev) => ({ ...prev, [key]: e.target.value }));
-  };
-  ////////
-  const handleSubmitAdd = () => {
-    axios
-      .post(`http://localhost:8081/tlp`, addrow)
-      .then(
-        (res) => console.log(res),
-        setRefresh((prev) => prev + 1)
+
+  const handleChange = (key, value) => {
+    setData((prev) =>
+      prev.map((item, i) =>
+        i === editIndex ? { ...item, [key]: value } : item
       )
-      .then((err) => {
-        console.log(err);
+    );
+  };
+
+  const handleSave = (item) => {
+    axios.put(`${port}tlp`, item).then(() => {
+      setRefresh((prev) => prev + 1);
+      setEditIndex(null);
+    });
+  };
+
+  const handleAddChange = (key, value) => {
+    setAddRow((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleAddSubmit = () => {
+    axios.post(`${port}tlp`, addrow).then(() => {
+      setAddMode(false);
+      setAddRow({
+        EmployeeID: login,
+        Course: "",
+        CourseCode: "",
+        Year: "",
+        Semester: "",
+        Sec: "",
+        ScheduledClasses: "",
+        HeldClasses: "",
+        No_ofStudentsRegistered: "",
+        No_ofStudentsPassed: "",
+        No_ofStudentsGivenFeedback: "",
+        FeedbackResult: "",
+        Acc_Year: "",
       });
+      setRefresh((prev) => prev + 1);
+    });
   };
+
   return (
-    <>
-      <div className="Container">
-        <div className="HeadingDiv">
-          Teaching and Learning
-          <Popup
-            trigger={<input type="button" value="Add Row" id="Btn" />}
-            modal
-            nested
-          >
-            {(close) => (
-              <>
-                <div className="Popupdiv1">
-                  <tr>
-                    <td>Course</td>
-                    <td>CourseCode </td>
-                    <td>Year </td>
-                    <td>Semester </td>
-                    <td> Sec</td>
-                    <td>ScheduledClasses</td>
-                    <td>HeldClasses</td>
-                    <td>No_ofStudentsRegistered</td>
-                    <td>No_ofStudentsPassed</td>
-                    <td>No_ofStudentsGivenFeedback</td>
-                    <td>FeedbackResult</td>
-                    <td>Acc_Year</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Course")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "CourseCode")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Year")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Semester")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Sec")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "ScheduledClasses")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "HeldClasses")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) =>
-                          handleAdd(e, "No_ofStudentsRegistered")
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "No_ofStudentsPassed")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) =>
-                          handleAdd(e, "No_ofStudentsGivenFeedback")
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "FeedbackResult")}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        onChange={(e) => handleAdd(e, "Acc_Year")}
-                      />
-                    </td>
-                    <td>
-                      <input type="submit" id="Btn" onClick={handleSubmitAdd} />
-                    </td>
-                  </tr>
+    <div className="Container">
+      <div className="HeadingDiv">
+        Teaching and Learning
+        <input
+          type="button"
+          value="Add Row"
+          id="Btn"
+          onClick={() => setAddMode(true)}
+        />
+      </div>
+      <div className="DisplyaDiv">
+        {data.map((item, index) => (
+          <div key={item.tlpuserid} className="profile1">
+            {Object.entries(item).map(([key, val]) =>
+              key !== "tlpuserid" ? (
+                <div key={key}>
+                  <b>{key}:</b>{" "}
+                  {editIndex === index ? (
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                    />
+                  ) : (
+                    val
+                  )}
                 </div>
-              </>
+              ) : null
             )}
-          </Popup>
-        </div>
-        <div className="DisplyaDiv">
-          {data.map((id, index) => {
-            return (
-              <div key={index} className="profile">
-                <div>
-                  <b>EmployeeID: </b>
-                  {id.EmployeeID}
-                  <br />
-                  <b>Course:</b> {id.Course} <br />
-                  <b> CourseCode:</b>
-                  {id.CourseCode}
-                  <br />
-                  <b>Year:</b> {id.Year}
-                  <br />
-                  <b>Semester:</b> {id.Semester}
-                  <br />
-                  <b>Sec:</b> {id.Sec}
-                  <br />
-                  <b>ScheduledClasses:</b> {id.ScheduledClasses}
-                  <br />
-                  <b>HeldClasses:</b> {id.HeldClasses}
-                  <br />
-                  <b>No_ofStudentsRegistered:</b> {id.No_ofStudentsRegistered}
-                  <br />
-                  <b>No_ofStudentsPassed:</b> {id.No_ofStudentsPassed}
-                  <br />
-                  <b>No_ofStudentsGivenFeedback:</b>{" "}
-                  {id.No_ofStudentsGivenFeedback}
-                  <br />
-                  <b>FeedbackResult:</b> {id.FeedbackResult}
-                  <br />
-                  <b>Acc_Year:</b> {id.Acc_Year}
-                  <br />
-                </div>
-                <div>
-                  <Popup
-                    trigger={<input type="button" value="modify" id="Btn" />}
-                    modal
-                    nested
-                  >
-                    {(close) => (
-                      <>
-                        <div className="Popupdiv1">
-                          <table>
-                            <tr>
-                              <td>Course</td>
-                              <td>CourseCode </td>
-                              <td>Year </td>
-                              <td>Semester </td>
-                              <td> Sec</td>
-                              <td>ScheduledClasses</td>
-                              <td>HeldClasses</td>
-                              <td>No_ofStudentsRegistered</td>
-                              <td>No_ofStudentsPassed</td>
-                              <td>No_ofStudentsGivenFeedback</td>
-                              <td>FeedbackResult</td>
-                              <td>Acc_Year</td>
-                              <td></td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Course}
-                                  onChange={(e) =>
-                                    handleModify(e, "Course", id.tlpuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.CourseCode}
-                                  onChange={(e) =>
-                                    handleModify(e, "CourseCode", id.tlpuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Year}
-                                  onChange={(e) =>
-                                    handleModify(e, "Year", id.tlpuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Semester}
-                                  onChange={(e) =>
-                                    handleModify(e, "Semester", id.tlpuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Sec}
-                                  onChange={(e) =>
-                                    handleModify(e, "Sec", id.tlpuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.ScheduledClasses}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "ScheduledClasses",
-                                      id.tlpuserid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.HeldClasses}
-                                  onChange={(e) =>
-                                    handleModify(e, "HeldClasses", id.tlpuserid)
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.No_ofStudentsRegistered}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "No_ofStudentsRegistered",
-                                      id.tlpuserid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.No_ofStudentsPassed}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "No_ofStudentsPassed",
-                                      id.tlpuserid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.No_ofStudentsGivenFeedback}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "No_ofStudentsGivenFeedback",
-                                      id.tlpuserid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.FeedbackResult}
-                                  onChange={(e) =>
-                                    handleModify(
-                                      e,
-                                      "FeedbackResult",
-                                      id.tlpuserid
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  defaultValue={id.Acc_Year}
-                                  onChange={(e) =>
-                                    handleModify(e, "Acc_Year", id.tlpuserid)
-                                  }
-                                />
-                              </td>
-                            </tr>
-                          </table>
-                          <input
-                            id="Btn"
-                            onClick={(e) => {
-                              handleSubmitModify(e);
-                              close();
-                            }}
-                            value="Submit"
-                          />
-                        </div>
-                      </>
-                    )}
-                  </Popup>
+            <div>
+              {editIndex === index ? (
+                <>
                   <input
                     type="button"
                     id="Btn"
-                    onClick={(e) => handleDelete(e, index)}
-                    value="Delete"
+                    value="Save"
+                    onClick={() => handleSave(item)}
                   />
-                </div>
+                  <input
+                    type="button"
+                    id="Btn"
+                    value="Cancel"
+                    onClick={() => setEditIndex(null)}
+                  />
+                </>
+              ) : (
+                <input
+                  type="button"
+                  id="Btn"
+                  value="Modify"
+                  onClick={() => setEditIndex(index)}
+                />
+              )}
+              <input
+                type="button"
+                id="Btn"
+                value="Delete"
+                onClick={() => handleDelete(item.tlpuserid)}
+              />
+            </div>
+          </div>
+        ))}
+
+        {addMode && (
+          <div className="profile">
+            {Object.entries(addrow).map(([key, val]) => (
+              <div key={key}>
+                <b>{key}:</b>{" "}
+                <input
+                  type="text"
+                  value={val}
+                  onChange={(e) => handleAddChange(key, e.target.value)}
+                />
               </div>
-            );
-          })}
-        </div>
+            ))}
+            <div>
+              <input
+                type="button"
+                id="Btn"
+                value="Submit"
+                onClick={handleAddSubmit}
+              />
+              <input
+                type="button"
+                id="Btn"
+                value="Cancel"
+                onClick={() => setAddMode(false)}
+              />
+            </div>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
