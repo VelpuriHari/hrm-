@@ -43,6 +43,7 @@ export default function SubmitTLC({ login }) {
   };
 
   const handleSave = (item) => {
+    console.log(item);
     axios.put(`${port}tlp`, item).then(() => {
       setRefresh((prev) => prev + 1);
       setEditIndex(null);
@@ -140,7 +141,7 @@ export default function SubmitTLC({ login }) {
         ))}
 
         {addMode && (
-          <div className="profile">
+          <div className="profile1">
             {Object.entries(addrow).map(([key, val]) => (
               <div key={key}>
                 <b>{key}:</b>{" "}

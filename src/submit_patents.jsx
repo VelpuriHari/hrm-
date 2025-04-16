@@ -6,6 +6,9 @@ import { port } from "./ProtUrl";
 export default function SubmitPatents({ login }) {
   const [data, setData] = useState([]);
   const [refresh, setRefresh] = useState(0);
+  const [addMode, setAddMode] = useState(false);
+  const [newEntryVisible, setNewEntryVisible] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
   const [modify, setModify] = useState({
     EmployeeID: login,
     Title: "",
@@ -32,6 +35,46 @@ export default function SubmitPatents({ login }) {
     });
   }, [refresh]);
 
+  const handleDelete = (index) => {
+    console.log(index);
+    axios
+      .delete(`${port}patents?patentuserid=${index}`)
+      .then(() => setRefresh((prev) => prev + 1));
+  };
+  const handleChange = (key, value) => {
+    setData((prev) =>
+      prev.map((item, i) =>
+        i === editIndex ? { ...item, [key]: value } : item
+      )
+    );
+  };
+  const handleSave = (item) => {
+    console.log(item);
+    axios.put(`${port}patents`, item).then(() => {
+      setRefresh((prev) => prev + 1);
+      setEditIndex(null);
+    });
+  };
+  const handleAddSubmit = () => {
+    axios.post(`${port}patents`, addrow).then(() => {
+      setAddMode(false);
+      setAddRow({
+        EmployeeID: login,
+        Title: "",
+        Application_Number: "",
+        date_of_filing: "",
+        Status: "",
+        date_of_grant: "",
+        Acc_year: "",
+      });
+      setRefresh((prev) => prev + 1);
+    });
+  };
+  const handleAddChange = (key, value) => {
+    setAddRow((prev) => ({ ...prev, [key]: value }));
+  };
+
+  /*
   const handleDelete = (e, index) => {
     e.preventDefault();
     axios
@@ -42,7 +85,7 @@ export default function SubmitPatents({ login }) {
       .catch((err) => {
         console.log(err);
       });
-  };
+  };*/
 
   const handleModify = (e, key, index) => {
     const newData = [...data];
@@ -82,121 +125,94 @@ export default function SubmitPatents({ login }) {
     <div className="Container">
       <div className="HeadingDiv">
         Patents
-        <button
-          onClick={() =>
-            setData([...data, { ...addrow, patentuserid: Date.now() }])
-          }
+        <input
+          type="button"
+          value="Add Row"
           id="Btn"
-        >
-          Add Row
-        </button>
+          onClick={() => setAddMode(true)}
+        />
       </div>
-
       <div className="DisplyaDiv">
-        {data.map((id, index) => (
-          <div key={id.patentuserid} className="profile">
+        {data.map((item, index) => (
+          <div key={item.certificationid} className="profile1">
+            {Object.entries(item).map(([key, val]) =>
+              key !== "patentuserid" ? (
+                <div key={key}>
+                  <b>{key}:</b>{" "}
+                  {editIndex === index ? (
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                    />
+                  ) : (
+                    val
+                  )}
+                </div>
+              ) : null
+            )}
             <div>
-              <b>EmployeeID: </b>
-              {id.EmployeeID}
-              <br />
-              <b>Title:</b>
+              {editIndex === index ? (
+                <>
+                  <input
+                    type="button"
+                    id="Btn"
+                    value="Save"
+                    onClick={() => handleSave(item)}
+                  />
+                  <input
+                    type="button"
+                    id="Btn"
+                    value="Cancel"
+                    onClick={() => setEditIndex(null)}
+                  />
+                </>
+              ) : (
+                <input
+                  type="button"
+                  id="Btn"
+                  value="Modify"
+                  onClick={() => setEditIndex(index)}
+                />
+              )}
               <input
-                type="text"
-                value={id.Title}
-                onChange={(e) => handleModify(e, "Title", index)}
+                type="button"
+                id="Btn"
+                value="Delete"
+                onClick={() => handleDelete(item.patentuserid)}
               />
-              <br />
-              <b>Application_Number:</b>
-              <input
-                type="text"
-                value={id.Application_Number}
-                onChange={(e) => handleModify(e, "Application_Number", index)}
-              />
-              <br />
-              <b>date_of_filing:</b>
-              <input
-                type="text"
-                value={id.date_of_filing}
-                onChange={(e) => handleModify(e, "date_of_filing", index)}
-              />
-              <br />
-              <b>Status:</b>
-              <input
-                type="text"
-                value={id.Status}
-                onChange={(e) => handleModify(e, "Status", index)}
-              />
-              <br />
-              <b>date_of_grant:</b>
-              <input
-                type="text"
-                value={id.date_of_grant}
-                onChange={(e) => handleModify(e, "date_of_grant", index)}
-              />
-              <br />
-              <b>Acc_year:</b>
-              <input
-                type="text"
-                value={id.Acc_year}
-                onChange={(e) => handleModify(e, "Acc_year", index)}
-              />
-            </div>
-
-            <div>
-              <button onClick={(e) => handleSubmitModify(e, index)} id="Btn">
-                Submit
-              </button>
-              <button onClick={(e) => handleDelete(e, index)} id="Btn">
-                Delete
-              </button>
             </div>
           </div>
         ))}
 
-        <div className="profile">
-          <b>New Row:</b>
-          <div>
-            <input
-              type="text"
-              value={addrow.Title}
-              onChange={(e) => handleAdd(e, "Title")}
-              placeholder="Title"
-            />
-            <input
-              type="text"
-              value={addrow.Application_Number}
-              onChange={(e) => handleAdd(e, "Application_Number")}
-              placeholder="Application Number"
-            />
-            <input
-              type="text"
-              value={addrow.date_of_filing}
-              onChange={(e) => handleAdd(e, "date_of_filing")}
-              placeholder="Date of Filing"
-            />
-            <input
-              type="text"
-              value={addrow.Status}
-              onChange={(e) => handleAdd(e, "Status")}
-              placeholder="Status"
-            />
-            <input
-              type="text"
-              value={addrow.date_of_grant}
-              onChange={(e) => handleAdd(e, "date_of_grant")}
-              placeholder="Date of Grant"
-            />
-            <input
-              type="text"
-              value={addrow.Acc_year}
-              onChange={(e) => handleAdd(e, "Acc_year")}
-              placeholder="Acc Year"
-            />
-            <button onClick={handleSubmitAdd} id="Btn">
-              Submit New Row
-            </button>
+        {addMode && (
+          <div className="profile1">
+            {Object.entries(addrow).map(([key, val]) => (
+              <div key={key}>
+                <b>{key}:</b>{" "}
+                <input
+                  type="text"
+                  value={val}
+                  onChange={(e) => handleAddChange(key, e.target.value)}
+                />
+              </div>
+            ))}
+            <div>
+              <input
+                type="button"
+                id="Btn"
+                value="Submit"
+                onClick={handleAddSubmit}
+              />
+              <input
+                type="button"
+                id="Btn"
+                value="Cancel"
+                onClick={() => setAddMode(false)}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

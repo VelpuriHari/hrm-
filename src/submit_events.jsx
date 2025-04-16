@@ -6,8 +6,19 @@ import { port } from "./ProtUrl";
 export default function SubmitEvents({ login }) {
   const [data, setData] = useState([]);
   const [refresh, setRefresh] = useState(0);
+  const [addMode, setAddMode] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
   const [newEntryVisible, setNewEntryVisible] = useState(false);
   const [newEntryData, setNewEntryData] = useState({
+    EmployeeID: login,
+    ProgramName: "",
+    DateFrom: "",
+    DateTo: "",
+    Outcome: "",
+    Role: "",
+    Acc_year: "",
+  });
+  const [addrow, setAddRow] = useState({
     EmployeeID: login,
     ProgramName: "",
     DateFrom: "",
@@ -22,11 +33,43 @@ export default function SubmitEvents({ login }) {
       .get(`${port}eventinfo?userid=${login}`)
       .then((res) => setData(res.data));
   }, [refresh]);
-
   const handleDelete = (index) => {
+    console.log(index);
     axios
-      .delete(`${port}eventinfo?eventuserid=${data[index].eventuserid}`)
+      .delete(`${port}eventinfo?eventuserid=${index}`)
       .then(() => setRefresh((prev) => prev + 1));
+  };
+  const handleChange = (key, value) => {
+    setData((prev) =>
+      prev.map((item, i) =>
+        i === editIndex ? { ...item, [key]: value } : item
+      )
+    );
+  };
+  const handleSave = (item) => {
+    console.log(item);
+    axios.put(`${port}eventinfo`, item).then(() => {
+      setRefresh((prev) => prev + 1);
+      setEditIndex(null);
+    });
+  };
+  const handleAddSubmit = () => {
+    axios.post(`${port}eventinfo`, addrow).then(() => {
+      setAddMode(false);
+      setAddRow({
+        EmployeeID: login,
+        ProgramName: "",
+        DateFrom: "",
+        DateTo: "",
+        Outcome: "",
+        Role: "",
+        Acc_year: "",
+      });
+      setRefresh((prev) => prev + 1);
+    });
+  };
+  const handleAddChange = (key, value) => {
+    setAddRow((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleEditChange = (index, key, value) => {
@@ -64,155 +107,86 @@ export default function SubmitEvents({ login }) {
           type="button"
           value="Add Row"
           id="Btn"
-          onClick={() => setNewEntryVisible(true)}
+          onClick={() => setAddMode(true)}
         />
       </div>
-
       <div className="DisplyaDiv">
-        {data.map((id, index) => {
-          const isNewRow = newEntryVisible && index === data.length;
-          return (
-            <div key={index} className="profile">
-              <div>
-                <b>EmployeeID:</b> {id.EmployeeID} <br />
-                <b>ProgramName:</b>{" "}
-                <input
-                  type="text"
-                  value={id.ProgramName}
-                  onChange={(e) =>
-                    handleEditChange(index, "ProgramName", e.target.value)
-                  }
-                />
-                <br />
-                <b>DateFrom:</b>{" "}
-                <input
-                  type="text"
-                  value={id.DateFrom}
-                  onChange={(e) =>
-                    handleEditChange(index, "DateFrom", e.target.value)
-                  }
-                />
-                <br />
-                <b>DateTo:</b>{" "}
-                <input
-                  type="text"
-                  value={id.DateTo}
-                  onChange={(e) =>
-                    handleEditChange(index, "DateTo", e.target.value)
-                  }
-                />
-                <br />
-                <b>Outcome:</b>{" "}
-                <input
-                  type="text"
-                  value={id.Outcome}
-                  onChange={(e) =>
-                    handleEditChange(index, "Outcome", e.target.value)
-                  }
-                />
-                <br />
-                <b>Role:</b>{" "}
-                <input
-                  type="text"
-                  value={id.Role}
-                  onChange={(e) =>
-                    handleEditChange(index, "Role", e.target.value)
-                  }
-                />
-                <br />
-                <b>Acc_year:</b>{" "}
-                <input
-                  type="text"
-                  value={id.Acc_year}
-                  onChange={(e) =>
-                    handleEditChange(index, "Acc_year", e.target.value)
-                  }
-                />
-              </div>
-              <div>
+        {data.map((item, index) => (
+          <div key={item.eventuserid} className="profile1">
+            {Object.entries(item).map(([key, val]) =>
+              key !== "eventuserid" ? (
+                <div key={key}>
+                  <b>{key}:</b>{" "}
+                  {editIndex === index ? (
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                    />
+                  ) : (
+                    val
+                  )}
+                </div>
+              ) : null
+            )}
+            <div>
+              {editIndex === index ? (
+                <>
+                  <input
+                    type="button"
+                    id="Btn"
+                    value="Save"
+                    onClick={() => handleSave(item)}
+                  />
+                  <input
+                    type="button"
+                    id="Btn"
+                    value="Cancel"
+                    onClick={() => setEditIndex(null)}
+                  />
+                </>
+              ) : (
                 <input
                   type="button"
-                  value="Save"
                   id="Btn"
-                  onClick={() => handleSubmitEdit(index)}
+                  value="Modify"
+                  onClick={() => setEditIndex(index)}
                 />
-                <input
-                  type="button"
-                  value="Delete"
-                  id="Btn"
-                  onClick={() => handleDelete(index)}
-                />
-              </div>
+              )}
+              <input
+                type="button"
+                id="Btn"
+                value="Delete"
+                onClick={() => handleDelete(item.eventuserid)}
+              />
             </div>
-          );
-        })}
+          </div>
+        ))}
 
-        {newEntryVisible && (
-          <div className="profile">
-            <div>
-              <b>EmployeeID:</b> {login} <br />
-              <b>ProgramName:</b>{" "}
-              <input
-                type="text"
-                value={newEntryData.ProgramName}
-                onChange={(e) =>
-                  handleNewEntryChange("ProgramName", e.target.value)
-                }
-              />
-              <br />
-              <b>DateFrom:</b>{" "}
-              <input
-                type="text"
-                value={newEntryData.DateFrom}
-                onChange={(e) =>
-                  handleNewEntryChange("DateFrom", e.target.value)
-                }
-              />
-              <br />
-              <b>DateTo:</b>{" "}
-              <input
-                type="text"
-                value={newEntryData.DateTo}
-                onChange={(e) => handleNewEntryChange("DateTo", e.target.value)}
-              />
-              <br />
-              <b>Outcome:</b>{" "}
-              <input
-                type="text"
-                value={newEntryData.Outcome}
-                onChange={(e) =>
-                  handleNewEntryChange("Outcome", e.target.value)
-                }
-              />
-              <br />
-              <b>Role:</b>{" "}
-              <input
-                type="text"
-                value={newEntryData.Role}
-                onChange={(e) => handleNewEntryChange("Role", e.target.value)}
-              />
-              <br />
-              <b>Acc_year:</b>{" "}
-              <input
-                type="text"
-                value={newEntryData.Acc_year}
-                onChange={(e) =>
-                  handleNewEntryChange("Acc_year", e.target.value)
-                }
-              />
-            </div>
+        {addMode && (
+          <div className="profile1">
+            {Object.entries(addrow).map(([key, val]) => (
+              <div key={key}>
+                <b>{key}:</b>{" "}
+                <input
+                  type="text"
+                  value={val}
+                  onChange={(e) => handleAddChange(key, e.target.value)}
+                />
+              </div>
+            ))}
             <div>
               <input
                 type="button"
+                id="Btn"
                 value="Submit"
-                id="Btn"
-                onClick={handleSubmitNewEntry}
+                onClick={handleAddSubmit}
               />
               <input
                 type="button"
-                value="Cancel"
                 id="Btn"
-                onClick={() => setNewEntryVisible(false)}
+                value="Cancel"
+                onClick={() => setAddMode(false)}
               />
             </div>
           </div>

@@ -7,8 +7,15 @@ export default function SubmitCertifications({ login }) {
   const [data, setData] = useState([]);
   const [refresh, setRefresh] = useState(0);
   const [editIndex, setEditIndex] = useState(null);
+  const [addMode, setAddMode] = useState(false);
   const [newEntryVisible, setNewEntryVisible] = useState(false);
-
+  const [addrow, setAddRow] = useState({
+    EmployeeID: login,
+    CertificationName: "",
+    Provider: "",
+    Duration: "",
+    Acc_Year: "",
+  });
   useEffect(() => {
     axios
       .get(`${port}certifications?userid=${login}`)
@@ -16,17 +23,42 @@ export default function SubmitCertifications({ login }) {
   }, [refresh]);
 
   const handleDelete = (index) => {
+    console.log(index);
     axios
-      .delete(
-        `${port}certifications?certificationid=${data[index].certificationid}`
-      )
+      .delete(`${port}certifications?certificationid=${index}`)
       .then(() => setRefresh((prev) => prev + 1));
   };
-
+  const handleChange = (key, value) => {
+    setData((prev) =>
+      prev.map((item, i) =>
+        i === editIndex ? { ...item, [key]: value } : item
+      )
+    );
+  };
+  const handleSave = (item) => {
+    console.log(item);
+    axios.put(`${port}certifications`, item).then(() => {
+      setRefresh((prev) => prev + 1);
+      setEditIndex(null);
+    });
+  };
   const handleEditChange = (index, key, value) => {
     const updated = [...data];
     updated[index][key] = value;
     setData(updated);
+  };
+  const handleAddSubmit = () => {
+    axios.post(`${port}certifications`, addrow).then(() => {
+      setAddMode(false);
+      setAddRow({
+        EmployeeID: login,
+        CertificationName: "",
+        Provider: "",
+        Duration: "",
+        Acc_Year: "",
+      });
+      setRefresh((prev) => prev + 1);
+    });
   };
 
   const handleSubmitEdit = (index) => {
@@ -36,7 +68,7 @@ export default function SubmitCertifications({ login }) {
       setRefresh((prev) => prev + 1);
     });
   };
-
+  /*
   const handleAddChange = (key, value) => {
     setData((prev) => {
       const newData = [...prev];
@@ -47,8 +79,10 @@ export default function SubmitCertifications({ login }) {
       };
       return newData;
     });
+  };*/
+  const handleAddChange = (key, value) => {
+    setAddRow((prev) => ({ ...prev, [key]: value }));
   };
-
   const handleSubmitAdd = () => {
     const newEntry = data[data.length - 1];
     axios.post(`${port}certifications`, newEntry).then(() => {
@@ -65,117 +99,90 @@ export default function SubmitCertifications({ login }) {
           type="button"
           value="Add Row"
           id="Btn"
-          onClick={() => setNewEntryVisible(true)}
+          onClick={() => setAddMode(true)}
         />
       </div>
       <div className="DisplyaDiv">
-        {data.map((id, index) => {
-          const isEditing = editIndex === index;
-          const isNewRow = newEntryVisible && index === data.length - 1;
-
-          return (
-            <div key={index} className="profile">
-              <div>
-                <b>EmployeeID:</b> {id.EmployeeID} <br />
-                <b>CertificationName:</b>{" "}
-                {isEditing || isNewRow ? (
-                  <input
-                    type="text"
-                    value={id.CertificationName || ""}
-                    onChange={(e) =>
-                      isNewRow
-                        ? handleAddChange("CertificationName", e.target.value)
-                        : handleEditChange(
-                            index,
-                            "CertificationName",
-                            e.target.value
-                          )
-                    }
-                  />
-                ) : (
-                  id.CertificationName
-                )}
-                <br />
-                <b>Provider:</b>{" "}
-                {isEditing || isNewRow ? (
-                  <input
-                    type="text"
-                    value={id.Provider || ""}
-                    onChange={(e) =>
-                      isNewRow
-                        ? handleAddChange("Provider", e.target.value)
-                        : handleEditChange(index, "Provider", e.target.value)
-                    }
-                  />
-                ) : (
-                  id.Provider
-                )}
-                <br />
-                <b>Duration:</b>{" "}
-                {isEditing || isNewRow ? (
-                  <input
-                    type="text"
-                    value={id.Duration || ""}
-                    onChange={(e) =>
-                      isNewRow
-                        ? handleAddChange("Duration", e.target.value)
-                        : handleEditChange(index, "Duration", e.target.value)
-                    }
-                  />
-                ) : (
-                  id.Duration
-                )}
-                <br />
-                <b>Acc_Year:</b>{" "}
-                {isEditing || isNewRow ? (
-                  <input
-                    type="text"
-                    value={id.Acc_Year || ""}
-                    onChange={(e) =>
-                      isNewRow
-                        ? handleAddChange("Acc_Year", e.target.value)
-                        : handleEditChange(index, "Acc_Year", e.target.value)
-                    }
-                  />
-                ) : (
-                  id.Acc_Year
-                )}
-              </div>
-              <div>
-                {isNewRow ? (
+        {data.map((item, index) => (
+          <div key={item.certificationid} className="profile1">
+            {Object.entries(item).map(([key, val]) =>
+              key !== "certificationid" ? (
+                <div key={key}>
+                  <b>{key}:</b>{" "}
+                  {editIndex === index ? (
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                    />
+                  ) : (
+                    val
+                  )}
+                </div>
+              ) : null
+            )}
+            <div>
+              {editIndex === index ? (
+                <>
                   <input
                     type="button"
-                    value="Submit"
                     id="Btn"
-                    onClick={handleSubmitAdd}
-                  />
-                ) : isEditing ? (
-                  <input
-                    type="button"
                     value="Save"
-                    id="Btn"
-                    onClick={() => handleSubmitEdit(index)}
+                    onClick={() => handleSave(item)}
                   />
-                ) : (
-                  <>
-                    <input
-                      type="button"
-                      value="Modify"
-                      id="Btn"
-                      onClick={() => setEditIndex(index)}
-                    />
-                    <input
-                      type="button"
-                      value="Delete"
-                      id="Btn"
-                      onClick={() => handleDelete(index)}
-                    />
-                  </>
-                )}
-              </div>
+                  <input
+                    type="button"
+                    id="Btn"
+                    value="Cancel"
+                    onClick={() => setEditIndex(null)}
+                  />
+                </>
+              ) : (
+                <input
+                  type="button"
+                  id="Btn"
+                  value="Modify"
+                  onClick={() => setEditIndex(index)}
+                />
+              )}
+              <input
+                type="button"
+                id="Btn"
+                value="Delete"
+                onClick={() => handleDelete(item.certificationid)}
+              />
             </div>
-          );
-        })}
+          </div>
+        ))}
+
+        {addMode && (
+          <div className="profile1">
+            {Object.entries(addrow).map(([key, val]) => (
+              <div key={key}>
+                <b>{key}:</b>{" "}
+                <input
+                  type="text"
+                  value={val}
+                  onChange={(e) => handleAddChange(key, e.target.value)}
+                />
+              </div>
+            ))}
+            <div>
+              <input
+                type="button"
+                id="Btn"
+                value="Submit"
+                onClick={handleAddSubmit}
+              />
+              <input
+                type="button"
+                id="Btn"
+                value="Cancel"
+                onClick={() => setAddMode(false)}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
