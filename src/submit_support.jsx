@@ -1,20 +1,13 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Popup from "reactjs-popup";
 import "./submit_support.css";
 import { port } from "./ProtUrl";
 
 export default function SubmitSupport({ login }) {
   const [data, setData] = useState([]);
-  const [delete_, setDelete] = useState([]);
+  const [addMode, setAddMode] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
   const [refresh, setRefresh] = useState(0);
-  const [modify, setModify] = useState({
-    EmployeeID: login,
-    Role: "",
-    Scope: "",
-    Support: "",
-    Peroid: "",
-  });
   const [addrow, setAddRow] = useState({
     EmployeeId: login,
     Role: "",
@@ -34,59 +27,44 @@ export default function SubmitSupport({ login }) {
         // consougugihoijogugiygugi
       });
   }, [refresh]);
-  const handleDelete = (e, index) => {
-    console.log(data[index]);
-    e.preventDefault();
-    axios
-      .delete(
-        `${port}support?userid=${login}&EmplooyeId=${data[index].EmplooyeId}&Role=${data[index].Role}&Support=${data[index].Support}&Peroid=${data[index].Peroid}`
-      )
-      .then((res) => {
-        console.log(res);
-        setRefresh((prev) => prev + 1);
-      })
-      .then((err) => {
-        console.log(err);
-      });
-  };
-  ///
-  const handleModify = (e, key, index) => {
-    e.preventDefault();
 
-    setModify((prev) => ({ ...prev, [key]: e.target.value }));
-    setModify((prev) => ({
-      ...prev,
-      support_userid: index,
-    }));
-    console.log(modify);
-  }; ///
-  const handleSubmitModify = (e, index) => {
-    e.preventDefault();
-    console.log(modify);
+  const handleDelete = (index) => {
+    console.log(index);
     axios
-      .put(`${port}support`, modify)
-      .then(
-        (res) => console.log(res),
-        setRefresh((prev) => prev + 1)
+      .delete(`${port}support?support_userid=${index}`)
+      .then(() => setRefresh((prev) => prev + 1));
+  };
+  const handleChange = (key, value) => {
+    setData((prev) =>
+      prev.map((item, i) =>
+        i === editIndex ? { ...item, [key]: value } : item
       )
-      .then((err) => console.log(err));
+    );
   };
-  ////
-  const handleAdd = (e, key) => {
-    e.preventDefault();
-    setAddRow((prev) => ({ ...prev, [key]: e.target.value }));
-    console.log(addrow);
+  const handleSave = (item) => {
+    console.log(item);
+    axios.put(`${port}support`, item).then(() => {
+      setRefresh((prev) => prev + 1);
+      setEditIndex(null);
+    });
   };
-  ////////
-  const handleSubmitAdd = () => {
-    axios
-      .post(`${port}support`, addrow)
-      .then((res) => console.log(res))
-      .then((err) => {
-        console.log(err);
+  const handleAddSubmit = () => {
+    axios.post(`${port}support`, addrow).then(() => {
+      setAddMode(false);
+      setAddRow({
+        EmployeeId: login,
+        Role: "",
+        Scope: "",
+        Support: "",
+        Peroid: "",
       });
-    setRefresh((prev) => prev + 1);
+      setRefresh((prev) => prev + 1);
+    });
   };
+  const handleAddChange = (key, value) => {
+    setAddRow((prev) => ({ ...prev, [key]: value }));
+  };
+
   return (
     <>
       <div className="Container">
@@ -96,144 +74,109 @@ export default function SubmitSupport({ login }) {
             type="button"
             value="Add Row"
             id="Btn"
-            onClick={() =>
-              setData((prev) => [
-                ...prev,
-                {
-                  EmployeeID: login,
-                  Role: "",
-                  Scope: "",
-                  Support: "",
-                  Acc_Year: "",
-                  support_userid: "new_" + Date.now(), // temp ID
-                  isNew: true,
-                },
-              ])
-            }
+            onClick={() => setAddMode(true)}
           />
         </div>
         <div className="DisplyaDiv">
-          {data.map((id, index) => {
-            const isNew = id.isNew;
-            const isEditing =
-              isNew || modify.support_userid === id.support_userid;
-
-            return (
-              <div key={index} className="profile">
-                <div>
-                  <b>EmployeeID:</b> {id.EmployeeID} <br />
-                  <b>Role:</b>{" "}
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      defaultValue={id.Role}
-                      onChange={(e) =>
-                        handleModify(e, "Role", id.support_userid)
-                      }
-                    />
-                  ) : (
-                    id.Role
+          {data.map((item, index) => (
+            <div key={item.eventuserid} className="profile1">
+              <table>
+                <tbody>
+                  {Object.entries(item).map(([key, val]) =>
+                    key !== "support_userid" ? (
+                      <tr>
+                        <td>
+                          {" "}
+                          <b>{key}</b>
+                        </td>
+                        <td>
+                          {editIndex === index ? (
+                            <input
+                              type="text"
+                              value={val}
+                              onChange={(e) =>
+                                handleChange(key, e.target.value)
+                              }
+                            />
+                          ) : (
+                            ((<b>:</b>), val)
+                          )}
+                        </td>
+                      </tr>
+                    ) : null
                   )}
-                  <br />
-                  <b>Scope:</b>{" "}
-                  {isEditing ? (
+                </tbody>
+              </table>
+              <div>
+                {editIndex === index ? (
+                  <>
                     <input
-                      type="text"
-                      defaultValue={id.Scope}
-                      onChange={(e) =>
-                        handleModify(e, "Scope", id.support_userid)
-                      }
-                    />
-                  ) : (
-                    id.Scope
-                  )}
-                  <br />
-                  <b>Support:</b>{" "}
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      defaultValue={id.Support}
-                      onChange={(e) =>
-                        handleModify(e, "Support", id.support_userid)
-                      }
-                    />
-                  ) : (
-                    id.Support
-                  )}
-                  <br />
-                  <b>Period:</b>{" "}
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      defaultValue={id.Acc_Year}
-                      onChange={(e) =>
-                        handleModify(e, "Peroid", id.support_userid)
-                      }
-                    />
-                  ) : (
-                    id.Acc_Year
-                  )}
-                </div>
-                <div>
-                  {isEditing ? (
-                    <input
-                      id="Btn"
                       type="button"
+                      id="Btn"
                       value="Save"
-                      onClick={(e) => {
-                        if (isNew) {
-                          axios
-                            .post(`${port}support`, {
-                              EmployeeId: id.EmployeeID,
-                              Role: modify.Role,
-                              Scope: modify.Scope,
-                              Support: modify.Support,
-                              Peroid: modify.Peroid,
-                            })
-                            .then((res) => {
-                              console.log(res);
-                              setRefresh((prev) => prev + 1);
-                            });
-                        } else {
-                          handleSubmitModify(e);
-                        }
-
-                        setModify({
-                          EmployeeID: login,
-                          Role: "",
-                          Scope: "",
-                          Support: "",
-                          Peroid: "",
-                        });
-                      }}
+                      onClick={() => handleSave(item)}
                     />
-                  ) : (
                     <input
                       type="button"
-                      value="Modify"
                       id="Btn"
-                      onClick={() =>
-                        setModify({
-                          EmployeeID: id.EmployeeID,
-                          Role: id.Role,
-                          Scope: id.Scope,
-                          Support: id.Support,
-                          Peroid: id.Acc_Year,
-                          support_userid: id.support_userid,
-                        })
-                      }
+                      value="Cancel"
+                      onClick={() => setEditIndex(null)}
                     />
-                  )}
+                  </>
+                ) : (
                   <input
                     type="button"
-                    onClick={(e) => handleDelete(e, index)}
-                    value="Delete"
                     id="Btn"
+                    value="Modify"
+                    onClick={() => setEditIndex(index)}
                   />
-                </div>
+                )}
+                <input
+                  type="button"
+                  id="Btn"
+                  value="Delete"
+                  onClick={() => handleDelete(item.support_userid)}
+                />
               </div>
-            );
-          })}
+            </div>
+          ))}
+
+          {addMode && (
+            <div className="profile1">
+              <table>
+                <tbody>
+                  {Object.entries(addrow).map(([key, val]) => (
+                    <tr>
+                      <td>
+                        <b>{key}:</b>
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={val}
+                          onChange={(e) => handleAddChange(key, e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div>
+                <input
+                  type="button"
+                  id="Btn"
+                  value="Submit"
+                  onClick={handleAddSubmit}
+                />
+                <input
+                  type="button"
+                  id="Btn"
+                  value="Cancel"
+                  onClick={() => setAddMode(false)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

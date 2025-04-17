@@ -42,11 +42,7 @@ export default function SubmitCertifications({ login }) {
       setEditIndex(null);
     });
   };
-  const handleEditChange = (index, key, value) => {
-    const updated = [...data];
-    updated[index][key] = value;
-    setData(updated);
-  };
+
   const handleAddSubmit = () => {
     axios.post(`${port}certifications`, addrow).then(() => {
       setAddMode(false);
@@ -61,34 +57,8 @@ export default function SubmitCertifications({ login }) {
     });
   };
 
-  const handleSubmitEdit = (index) => {
-    const row = data[index];
-    axios.put(`${port}certifications`, row).then(() => {
-      setEditIndex(null);
-      setRefresh((prev) => prev + 1);
-    });
-  };
-  /*
-  const handleAddChange = (key, value) => {
-    setData((prev) => {
-      const newData = [...prev];
-      newData[prev.length] = {
-        ...(newData[prev.length] || {}),
-        EmployeeID: login,
-        [key]: value,
-      };
-      return newData;
-    });
-  };*/
   const handleAddChange = (key, value) => {
     setAddRow((prev) => ({ ...prev, [key]: value }));
-  };
-  const handleSubmitAdd = () => {
-    const newEntry = data[data.length - 1];
-    axios.post(`${port}certifications`, newEntry).then(() => {
-      setNewEntryVisible(false);
-      setRefresh((prev) => prev + 1);
-    });
   };
 
   return (
@@ -105,22 +75,35 @@ export default function SubmitCertifications({ login }) {
       <div className="DisplyaDiv">
         {data.map((item, index) => (
           <div key={item.certificationid} className="profile1">
-            {Object.entries(item).map(([key, val]) =>
-              key !== "certificationid" ? (
-                <div key={key}>
-                  <b>{key}:</b>{" "}
-                  {editIndex === index ? (
-                    <input
-                      type="text"
-                      value={val}
-                      onChange={(e) => handleChange(key, e.target.value)}
-                    />
-                  ) : (
-                    val
-                  )}
-                </div>
-              ) : null
-            )}
+            <table>
+              <tbody>
+                {Object.entries(item).map(([key, val]) =>
+                  key !== "certificationid" ? (
+                    <tr>
+                      <td>
+                        <b>{key}:</b>{" "}
+                      </td>
+                      <td>
+                        {" "}
+                        {editIndex === index ? (
+                          <input
+                            type="text"
+                            value={val}
+                            onChange={(e) => handleChange(key, e.target.value)}
+                          />
+                        ) : (
+                          val
+                        )}
+                      </td>
+                    </tr>
+                  ) : null
+                )}
+                <tr>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
             <div>
               {editIndex === index ? (
                 <>
@@ -157,16 +140,25 @@ export default function SubmitCertifications({ login }) {
 
         {addMode && (
           <div className="profile1">
-            {Object.entries(addrow).map(([key, val]) => (
-              <div key={key}>
-                <b>{key}:</b>{" "}
-                <input
-                  type="text"
-                  value={val}
-                  onChange={(e) => handleAddChange(key, e.target.value)}
-                />
-              </div>
-            ))}
+            <table>
+              <tbody>
+                {Object.entries(addrow).map(([key, val]) => (
+                  <tr>
+                    <td>
+                      {" "}
+                      <b>{key}:</b>
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={val}
+                        onChange={(e) => handleAddChange(key, e.target.value)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             <div>
               <input
                 type="button"

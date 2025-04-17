@@ -7,18 +7,8 @@ export default function SubmitPatents({ login }) {
   const [data, setData] = useState([]);
   const [refresh, setRefresh] = useState(0);
   const [addMode, setAddMode] = useState(false);
-  const [newEntryVisible, setNewEntryVisible] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-  const [modify, setModify] = useState({
-    EmployeeID: login,
-    Title: "",
-    Application_Number: "",
-    date_of_filing: "",
-    Status: "",
-    date_of_grant: "",
-    Acc_year: "",
-    patentuserid: "",
-  });
+
   const [addrow, setAddRow] = useState({
     EmployeeID: login,
     Title: "",
@@ -74,53 +64,6 @@ export default function SubmitPatents({ login }) {
     setAddRow((prev) => ({ ...prev, [key]: value }));
   };
 
-  /*
-  const handleDelete = (e, index) => {
-    e.preventDefault();
-    axios
-      .delete(`${port}patents?patentuserid=${data[index].patentuserid}`)
-      .then((res) => {
-        setRefresh((prev) => prev + 1);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };*/
-
-  const handleModify = (e, key, index) => {
-    const newData = [...data];
-    newData[index][key] = e.target.value;
-    setData(newData);
-  };
-
-  const handleSubmitModify = (e, index) => {
-    e.preventDefault();
-    axios
-      .put(`${port}patents`, data[index])
-      .then((res) => {
-        setRefresh((prev) => prev + 1);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  const handleAdd = (e, key) => {
-    setAddRow((prev) => ({ ...prev, [key]: e.target.value }));
-  };
-
-  const handleSubmitAdd = (e) => {
-    e.preventDefault();
-    axios
-      .post(`${port}patents`, addrow)
-      .then((res) => {
-        setRefresh((prev) => prev + 1);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
   return (
     <div className="Container">
       <div className="HeadingDiv">
@@ -135,22 +78,31 @@ export default function SubmitPatents({ login }) {
       <div className="DisplyaDiv">
         {data.map((item, index) => (
           <div key={item.certificationid} className="profile1">
-            {Object.entries(item).map(([key, val]) =>
-              key !== "patentuserid" ? (
-                <div key={key}>
-                  <b>{key}:</b>{" "}
-                  {editIndex === index ? (
-                    <input
-                      type="text"
-                      value={val}
-                      onChange={(e) => handleChange(key, e.target.value)}
-                    />
-                  ) : (
-                    val
-                  )}
-                </div>
-              ) : null
-            )}
+            <table>
+              <tbody>
+                {Object.entries(item).map(([key, val]) =>
+                  key !== "patentuserid" ? (
+                    <tr>
+                      <td>
+                        {" "}
+                        <b>{key}:</b>
+                      </td>
+                      <td>
+                        {editIndex === index ? (
+                          <input
+                            type="text"
+                            value={val}
+                            onChange={(e) => handleChange(key, e.target.value)}
+                          />
+                        ) : (
+                          val
+                        )}
+                      </td>
+                    </tr>
+                  ) : null
+                )}
+              </tbody>
+            </table>
             <div>
               {editIndex === index ? (
                 <>
@@ -187,16 +139,25 @@ export default function SubmitPatents({ login }) {
 
         {addMode && (
           <div className="profile1">
-            {Object.entries(addrow).map(([key, val]) => (
-              <div key={key}>
-                <b>{key}:</b>{" "}
-                <input
-                  type="text"
-                  value={val}
-                  onChange={(e) => handleAddChange(key, e.target.value)}
-                />
-              </div>
-            ))}
+            <table>
+              <tbody>
+                {Object.entries(addrow).map(([key, val]) => (
+                  <tr>
+                    <td>
+                      <b>{key}:</b>
+                    </td>
+                    <td>
+                      {" "}
+                      <input
+                        type="text"
+                        value={val}
+                        onChange={(e) => handleAddChange(key, e.target.value)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             <div>
               <input
                 type="button"

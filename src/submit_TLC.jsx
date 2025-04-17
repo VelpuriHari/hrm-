@@ -90,22 +90,30 @@ export default function SubmitTLC({ login }) {
       <div className="DisplyaDiv">
         {data.map((item, index) => (
           <div key={item.tlpuserid} className="profile1">
-            {Object.entries(item).map(([key, val]) =>
-              key !== "tlpuserid" ? (
-                <div key={key}>
-                  <b>{key}:</b>{" "}
-                  {editIndex === index ? (
-                    <input
-                      type="text"
-                      value={val}
-                      onChange={(e) => handleChange(key, e.target.value)}
-                    />
-                  ) : (
-                    val
-                  )}
-                </div>
-              ) : null
-            )}
+            <table>
+              <tbody>
+                {Object.entries(item).map(([key, val]) =>
+                  key !== "tlpuserid" ? (
+                    <tr>
+                      <td>
+                        <b>{key}:</b>
+                      </td>
+                      <td>
+                        {editIndex === index ? (
+                          <input
+                            type="text"
+                            value={val}
+                            onChange={(e) => handleChange(key, e.target.value)}
+                          />
+                        ) : (
+                          val
+                        )}
+                      </td>
+                    </tr>
+                  ) : null
+                )}
+              </tbody>
+            </table>
             <div>
               {editIndex === index ? (
                 <>
@@ -142,16 +150,26 @@ export default function SubmitTLC({ login }) {
 
         {addMode && (
           <div className="profile1">
-            {Object.entries(addrow).map(([key, val]) => (
-              <div key={key}>
-                <b>{key}:</b>{" "}
-                <input
-                  type="text"
-                  value={val}
-                  onChange={(e) => handleAddChange(key, e.target.value)}
-                />
-              </div>
-            ))}
+            <table>
+              <tbody>
+                {Object.entries(addrow).map(([key, val]) => (
+                  <tr>
+                    <td>
+                      <b>{key}:</b>
+                    </td>
+                    <td>
+                      {" "}
+                      <input
+                        type="text"
+                        value={val}
+                        onChange={(e) => handleAddChange(key, e.target.value)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
             <div>
               <input
                 type="button"
